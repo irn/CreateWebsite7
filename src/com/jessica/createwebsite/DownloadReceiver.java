@@ -46,7 +46,8 @@ public class DownloadReceiver extends BroadcastReceiver {
                             Intent pdfIntent = new Intent(context, MuPDFActivity.class);
                             pdfIntent.setAction(Intent.ACTION_VIEW);
                             pdfIntent.setData(Uri.parse(filename));
-                            pdfIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                            pdfIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             context.startActivity(pdfIntent);
                         }
                     }
@@ -59,13 +60,4 @@ public class DownloadReceiver extends BroadcastReceiver {
         }
     }
 
-    protected String convertMediaUriToPath(Context context, Uri uri) {
-        String [] proj={MediaStore.Files.FileColumns.DATA};
-        Cursor cursor = context.getContentResolver().query(uri, proj,  null, null, null);
-        int column_index = cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATA);
-        cursor.moveToFirst();
-        String path = cursor.getString(column_index);
-        cursor.close();
-        return path;
-    }
 }

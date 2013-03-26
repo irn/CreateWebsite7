@@ -3,10 +3,12 @@ package com.jessica.createwebsite;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.*;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import com.artifex.mupdfdemo.MuPDFActivity;
 
 import java.io.File;
 import java.net.URL;
@@ -26,26 +28,37 @@ public class StartActivity extends Activity
         super.onResume();    //To change body of overridden methods use File | Settings | File Templates.
         SharedPreferences preferences = getSharedPreferences("prefs", ContextWrapper.MODE_PRIVATE);
         long id = preferences.getLong("downloadedId", -1);
+        DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
         if (id == -1){
-            DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(getString(R.string.pdf_url)));
             id = dm.enqueue(request);
             preferences.edit().putLong("downloadedId", id).commit();
         } else {
-
+            openStoredFile(dm, id);
+            finish();
         }
 
     }
 
-    class DownloadFileAsyncTask extends AsyncTask<URL, Integer, Integer>{
-
-        @Override
-        protected Integer doInBackground(URL... params) {
-            if (params != null && params.length > 0){
-                URL url = params[0];
-//                url.openConnection().
+    private void openStoredFile(DownloadManager dm, long id){
+        DownloadManager.Query query = new DownloadManager.Query();
+        query.setFilterById(id);
+        Cursor cursor = dm.query(query);
+        if (cursor != null){
+            cursor.moveToFirst();
+            int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
+            if (status == DownloadManager.STATUS_SUCCESSFUL){
+                String filename = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+                if (filename != null){
+                    Intent pdfIntent = new Intent(this, MuPDFActivity.class);
+                    pdfIntent.setAction(Intent.ACTION_VIEW);
+                    pdfIntent.setData(Uri.parse(filename));
+                    pdfIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(pdfIntent);
+                }
             }
-            return null;  //To change body of implemented methods use File | Settings | File Templates.
+            cursor.close();
         }
     }
 

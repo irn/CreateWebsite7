@@ -2,4 +2,5 @@
 <resources>
     <string name="app_name">Create A Website In 7min</string>
     <string name="pdf_url">http://bit.ly/cawpdf</string>
+    <string name="download_error">Download error</string>
 </resources>

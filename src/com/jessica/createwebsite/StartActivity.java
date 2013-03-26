@@ -9,7 +9,13 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import com.artifex.mupdfdemo.MuPDFActivity;
+
+import java.io.File;
+import java.io.IOException;
+
+import static com.jessica.createwebsite.DownloadReceiver.convertMediaUriToPath;
 
 public class StartActivity extends Activity
 {
@@ -27,37 +33,48 @@ public class StartActivity extends Activity
         SharedPreferences preferences = getSharedPreferences("prefs", ContextWrapper.MODE_PRIVATE);
         long id = preferences.getLong("downloadedId", -1);
         DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
-        if (id == -1){
+        if (id == -1 || !openStoredFile(dm, id)){
             DownloadManager.Request request = new DownloadManager.Request(Uri.parse(getString(R.string.pdf_url)));
+            File f = new File(Environment.getExternalStorageDirectory(), "document.pdf");
+            if (f.exists()){
+                f.delete();
+            }
+
+            request.setDestinationUri(Uri.fromFile(f));
             id = dm.enqueue(request);
             preferences.edit().putLong("downloadedId", id).commit();
-        } else {
-            openStoredFile(dm, id);
-            finish();
         }
 
     }
 
-    private void openStoredFile(DownloadManager dm, long id){
+    private boolean openStoredFile(DownloadManager dm, long id){
         DownloadManager.Query query = new DownloadManager.Query();
         query.setFilterById(id);
         Cursor cursor = dm.query(query);
-        if (cursor != null){
+        if (cursor != null && cursor.getCount() > 0){
             cursor.moveToFirst();
             int status = cursor.getInt(cursor.getColumnIndex(DownloadManager.COLUMN_STATUS));
             if (status == DownloadManager.STATUS_SUCCESSFUL){
-                String filename = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+                String filename = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+//                String value = convertMediaUriToPath(this, Uri.parse(filename));
                 if (filename != null){
-                    Intent pdfIntent = new Intent(this, MuPDFActivity.class);
-                    pdfIntent.setAction(Intent.ACTION_VIEW);
-                    pdfIntent.setData(Uri.parse(filename));
-                    pdfIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(pdfIntent);
+                    startViewDocument(this, filename);
+                    return true;
                 }
             }
             cursor.close();
         }
+        return false;
+    }
+
+    public static void startViewDocument(Context context, String path){
+
+        Intent pdfIntent = new Intent(context, MuPDFActivity.class);
+        pdfIntent.setAction(Intent.ACTION_VIEW);
+        pdfIntent.setData(Uri.parse(path));
+        pdfIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        pdfIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(pdfIntent);
     }
 
 }

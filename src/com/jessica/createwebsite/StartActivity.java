@@ -2,16 +2,14 @@ package com.jessica.createwebsite;
 
 import android.app.Activity;
 import android.app.DownloadManager;
-import android.content.*;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import com.artifex.mupdfdemo.MuPDFActivity;
-
-import java.io.File;
-import java.net.URL;
 
 public class StartActivity extends Activity
 {

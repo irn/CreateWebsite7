@@ -1,4 +1,4 @@
-package com.jessica.createwebsite;
+package com.jlynnapps.createwebsite;
 
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
@@ -9,9 +9,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.widget.Toast;
-import com.artifex.mupdfdemo.MuPDFActivity;
 
-import static com.jessica.createwebsite.StartActivity.startViewDocument;
+import static com.jlynnapps.createwebsite.StartActivity.startViewDocument;
 
 /**
 * Created with IntelliJ IDEA.
